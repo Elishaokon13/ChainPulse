@@ -9,12 +9,16 @@ import {
   CircularProgress,
   Grid,
   Paper,
-  LinearProgress
+  LinearProgress,
+  Button
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 import { getProject } from '../data/api';
+import MetricDetailsDrawer from './MetricDetailsDrawer';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import LoadingState from './LoadingState';
 
 const drawerWidth = 400;
 
@@ -22,6 +26,8 @@ export default function ProjectDetailsPanel({ projectId, open, onClose }) {
   const [project, setProject] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [selectedMetric, setSelectedMetric] = useState(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   useEffect(() => {
     const fetchProject = async () => {
@@ -68,6 +74,15 @@ export default function ProjectDetailsPanel({ projectId, open, onClose }) {
     return 'error';
   };
 
+  const handleMetricClick = (metric) => {
+    setSelectedMetric(metric);
+    setDrawerOpen(true);
+  };
+  const handleDrawerClose = () => {
+    setDrawerOpen(false);
+    setSelectedMetric(null);
+  };
+
   return (
     <Drawer
       anchor="right"
@@ -97,9 +112,7 @@ export default function ProjectDetailsPanel({ projectId, open, onClose }) {
         </Box>
 
         {loading ? (
-          <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
-            <CircularProgress />
-          </Box>
+          <LoadingState message="Loading project details..." />
         ) : error ? (
           <Typography color="error" sx={{ p: 4, textAlign: 'center' }}>
             {error}
@@ -174,8 +187,10 @@ export default function ProjectDetailsPanel({ projectId, open, onClose }) {
                   </Typography>
                   <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                     <Box>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                        <Typography variant="subtitle2">Total Value Locked (TVL)</Typography>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5, alignItems: 'center' }}>
+                        <Button variant="text" onClick={() => handleMetricClick('tvl')} sx={{ p: 0, minWidth: 0, fontWeight: 600 }}>
+                          Total Value Locked (TVL)
+                        </Button>
                         <Typography variant="subtitle2">
                           ${project.tvl?.toLocaleString() || '0'}
                         </Typography>
@@ -196,8 +211,10 @@ export default function ProjectDetailsPanel({ projectId, open, onClose }) {
                       </Typography>
                     </Box>
                     <Box>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                        <Typography variant="subtitle2">Active Wallets</Typography>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5, alignItems: 'center' }}>
+                        <Button variant="text" onClick={() => handleMetricClick('wallets')} sx={{ p: 0, minWidth: 0, fontWeight: 600 }}>
+                          Active Wallets
+                        </Button>
                         <Typography variant="subtitle2">
                           {project.wallets?.toLocaleString() || '0'}
                         </Typography>
@@ -218,10 +235,12 @@ export default function ProjectDetailsPanel({ projectId, open, onClose }) {
                       </Typography>
                     </Box>
                     <Box>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                        <Typography variant="subtitle2">Social Mentions (24h)</Typography>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5, alignItems: 'center' }}>
+                        <Button variant="text" onClick={() => handleMetricClick('mentions')} sx={{ p: 0, minWidth: 0, fontWeight: 600 }}>
+                          Social Mentions (24h)
+                        </Button>
                         <Typography variant="subtitle2">
-                          {project.mentions?.toLocaleString() || '0'}
+                          {Array.isArray(project.mentions) ? project.mentions.length : 0}
                         </Typography>
                       </Box>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -240,10 +259,12 @@ export default function ProjectDetailsPanel({ projectId, open, onClose }) {
                       </Typography>
                     </Box>
                     <Box>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                        <Typography variant="subtitle2">Development Activity (30d)</Typography>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5, alignItems: 'center' }}>
+                        <Button variant="text" onClick={() => handleMetricClick('commits')} sx={{ p: 0, minWidth: 0, fontWeight: 600 }}>
+                          Development Activity (30d)
+                        </Button>
                         <Typography variant="subtitle2">
-                          {project.commits || '0'} commits
+                          {project.commits || 0} commits
                         </Typography>
                       </Box>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -314,6 +335,14 @@ export default function ProjectDetailsPanel({ projectId, open, onClose }) {
           </Box>
         ) : null}
       </Box>
+
+      <MetricDetailsDrawer
+        open={drawerOpen}
+        onClose={handleDrawerClose}
+        metric={selectedMetric}
+        project={project}
+        showBackArrow={true}
+      />
     </Drawer>
   );
 } 

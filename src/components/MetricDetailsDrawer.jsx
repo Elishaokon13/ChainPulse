@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Drawer, Box, Typography, IconButton, Divider, MenuItem, Select, FormControl, InputLabel } from '@mui/material';
+import { Drawer, Box, Typography, Divider, MenuItem, Select, FormControl, InputLabel } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import LoadingState from './LoadingState';
+import { Button } from "@/components/ui/button";
 
 const TIMEFRAMES = [
   { label: '24h', value: '24h' },
@@ -174,9 +175,9 @@ export default function MetricDetailsDrawer({ open, onClose, metric, project, sh
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             {showBackArrow && (
-              <IconButton onClick={onClose} size="small">
-                <ArrowBackIcon />
-              </IconButton>
+              <Button onClick={onClose} size="icon" variant="ghost" className="h-8 w-8">
+                <ArrowBackIcon className="h-4 w-4" />
+              </Button>
             )}
             <Typography variant="h6" sx={{ fontWeight: 600, ml: showBackArrow ? 1 : 0 }}>
               {metric === 'wallets' && 'Active Wallets'}
@@ -185,7 +186,7 @@ export default function MetricDetailsDrawer({ open, onClose, metric, project, sh
               {metric === 'commits' && 'Development Activity'}
             </Typography>
           </Box>
-          <IconButton onClick={onClose}><CloseIcon /></IconButton>
+          <Button onClick={onClose} size="icon" variant="ghost" className="h-8 w-8"><CloseIcon className="h-4 w-4" /></Button>
         </Box>
         <Divider sx={{ mb: 2 }} />
         <Typography variant="body1" sx={{ mb: 2 }}>{info.description}</Typography>

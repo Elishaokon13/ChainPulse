@@ -3,14 +3,13 @@ import {
   Box,
   Drawer,
   Typography,
-  IconButton,
   Divider,
   Chip,
   CircularProgress,
   Grid,
   Paper,
   LinearProgress,
-  Button
+  Button as MuiButton
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
@@ -19,6 +18,7 @@ import { getProject } from '../data/api';
 import MetricDetailsDrawer from './MetricDetailsDrawer';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import LoadingState from './LoadingState';
+import { Button } from "@/components/ui/button";
 
 const drawerWidth = 400;
 
@@ -106,9 +106,9 @@ export default function ProjectDetailsPanel({ projectId, open, onClose }) {
           <Typography variant="h5" sx={{ fontWeight: 600 }}>
             Project Details
           </Typography>
-          <IconButton onClick={onClose} size="small">
-            <CloseIcon />
-          </IconButton>
+          <Button onClick={onClose} size="icon" variant="ghost" className="h-8 w-8">
+            <CloseIcon className="h-4 w-4"/>
+          </Button>
         </Box>
 
         {loading ? (
@@ -188,7 +188,7 @@ export default function ProjectDetailsPanel({ projectId, open, onClose }) {
                   <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                     <Box>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5, alignItems: 'center' }}>
-                        <Button variant="text" onClick={() => handleMetricClick('tvl')} sx={{ p: 0, minWidth: 0, fontWeight: 600 }}>
+                        <Button variant="ghost" onClick={() => handleMetricClick('tvl')} className="p-0 min-w-0 font-semibold">
                           Total Value Locked (TVL)
                         </Button>
                         <Typography variant="subtitle2">
@@ -212,7 +212,7 @@ export default function ProjectDetailsPanel({ projectId, open, onClose }) {
                     </Box>
                     <Box>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5, alignItems: 'center' }}>
-                        <Button variant="text" onClick={() => handleMetricClick('wallets')} sx={{ p: 0, minWidth: 0, fontWeight: 600 }}>
+                        <Button variant="ghost" onClick={() => handleMetricClick('wallets')} className="p-0 min-w-0 font-semibold">
                           Active Wallets
                         </Button>
                         <Typography variant="subtitle2">
@@ -236,7 +236,7 @@ export default function ProjectDetailsPanel({ projectId, open, onClose }) {
                     </Box>
                     <Box>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5, alignItems: 'center' }}>
-                        <Button variant="text" onClick={() => handleMetricClick('mentions')} sx={{ p: 0, minWidth: 0, fontWeight: 600 }}>
+                        <Button variant="ghost" onClick={() => handleMetricClick('mentions')} className="p-0 min-w-0 font-semibold">
                           Social Mentions (24h)
                         </Button>
                         <Typography variant="subtitle2">

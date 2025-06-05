@@ -1,7 +1,8 @@
 import { Box, Container, GlobalStyles } from '@mui/material';
 import Navbar from './Navbar';
+import ThemeSwitcher from '../ui/ThemeSwitcher';
 
-export default function MainLayout({ children, toggleTheme, isDarkMode }) {
+export default function MainLayout({ children }) {
   return (
     <>
       <GlobalStyles styles={{ body: { background: 'linear-gradient(135deg, #f8fafc 0%, #e8f0fe 100%)' } }} />
@@ -11,7 +12,7 @@ export default function MainLayout({ children, toggleTheme, isDarkMode }) {
         minHeight: '100vh',
         overflowX: 'hidden'
       }}>
-        <Navbar toggleTheme={toggleTheme} isDarkMode={isDarkMode} />
+        <Navbar />
         <Box
           component="main"
           sx={{

@@ -1,8 +1,6 @@
-import { useState } from 'react'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
-import { ThemeProvider } from '@mui/material/styles'
 import CssBaseline from '@mui/material/CssBaseline'
-import { theme } from './theme'
+import { ThemeProvider } from './contexts/ThemeContext'
 import MainLayout from './components/Layout/MainLayout'
 import Dashboard from './pages/Dashboard'
 import Projects from './pages/Projects'
@@ -14,18 +12,12 @@ import ProjectDetails from './pages/ProjectDetails'
 import ErrorBoundary from './components/ErrorBoundary'
 
 function App() {
-  const [isDarkMode, setIsDarkMode] = useState(false)
-
-  const toggleTheme = () => {
-    setIsDarkMode(!isDarkMode)
-  }
-
   return (
     <ErrorBoundary>
-      <ThemeProvider theme={theme}>
+      <ThemeProvider>
         <CssBaseline />
         <Router>
-          <MainLayout toggleTheme={toggleTheme} isDarkMode={isDarkMode}>
+          <MainLayout>
             <Routes>
               <Route path="/" element={<Dashboard />} />
               <Route path="/projects" element={<Projects />} />

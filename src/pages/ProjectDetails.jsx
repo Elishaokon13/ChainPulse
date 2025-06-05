@@ -6,10 +6,9 @@ import {
   Paper,
   Grid,
   Chip,
-  IconButton,
+  IconButton as MuiIconButton,
   CircularProgress,
   Divider,
-  Button,
   LinearProgress
 } from '@mui/material';
 import {
@@ -25,6 +24,7 @@ import { getProject } from '../data/api';
 import ProjectSocialMentions from '../components/ProjectSocialMentions';
 import SocialAnalytics from '../components/SocialAnalytics';
 import MetricDetailsDrawer from '../components/MetricDetailsDrawer';
+import { Button } from "@/components/ui/button";
 
 export default function ProjectDetails() {
   const { id } = useParams();
@@ -117,10 +117,10 @@ export default function ProjectDetails() {
       {/* Header */}
       <Box sx={{ mb: 4 }}>
         <Button
-          startIcon={<ArrowBackIcon />}
           onClick={() => navigate(-1)}
-          sx={{ mb: 2 }}
+          className="mb-2 inline-flex items-center"
         >
+          <ArrowBackIcon className="mr-1 h-4 w-4"/>
           Back to Dashboard
         </Button>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>

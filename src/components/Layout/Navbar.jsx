@@ -23,11 +23,11 @@ import {
   TrendingUp as TrendingUpIcon,
   Code as CodeIcon,
   Info as InfoIcon,
-  Menu as MenuIcon,
-  Brightness4 as DarkModeIcon,
-  Brightness7 as LightModeIcon
+  Menu as MenuIcon
 } from '@mui/icons-material';
 import { Link, useLocation } from 'react-router-dom';
+import { Button as ShadcnButton } from "@/components/ui/button";
+import ThemeSwitcher from '../ui/ThemeSwitcher';
 
 const navItems = [
   { text: 'Dashboard', icon: <DashboardIcon />, path: '/' },
@@ -37,7 +37,7 @@ const navItems = [
   { text: 'About', icon: <InfoIcon />, path: '/about' }
 ];
 
-export default function Navbar({ toggleTheme, isDarkMode }) {
+export default function Navbar() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -51,7 +51,7 @@ export default function Navbar({ toggleTheme, isDarkMode }) {
     <Box sx={{ width: 250 }}>
       <Box sx={{ p: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
         <Typography variant="h6" component="div" sx={{ 
-          fontFamily: 'Charter',
+          fontFamily: 'Grotesk',
           fontWeight: 600,
           color: 'primary.main'
         }}>
@@ -61,10 +61,10 @@ export default function Navbar({ toggleTheme, isDarkMode }) {
       <Divider />
       <List>
         {navItems.map((item) => (
-          <ListItem 
-            button 
-            key={item.text} 
-            component={Link} 
+          <ListItem
+            button
+            key={item.text}
+            component={Link}
             to={item.path}
             selected={location.pathname === item.path}
             sx={{
@@ -83,6 +83,12 @@ export default function Navbar({ toggleTheme, isDarkMode }) {
           </ListItem>
         ))}
       </List>
+      <Divider />
+      <List>
+        <ListItem button>
+          <ThemeSwitcher />
+        </ListItem>
+      </List>
     </Box>
   );
 
@@ -100,15 +106,15 @@ export default function Navbar({ toggleTheme, isDarkMode }) {
         <Container maxWidth="xl">
           <Toolbar disableGutters>
             {isMobile && (
-              <IconButton
+              <Button
                 color="primary"
                 aria-label="open drawer"
                 edge="start"
                 onClick={handleDrawerToggle}
-                sx={{ mr: 2 }}
+                className="mr-2" size="icon" variant="ghost"
               >
-                <MenuIcon />
-              </IconButton>
+                <MenuIcon className="h-6 w-6"/>
+              </Button>
             )}
 
             <Typography
@@ -132,32 +138,28 @@ export default function Navbar({ toggleTheme, isDarkMode }) {
             {!isMobile && (
               <Box sx={{ display: 'flex', gap: 1, flexGrow: 1 }}>
                 {navItems.map((item) => (
-                  <Button
+                  <ShadcnButton
                     key={item.text}
-                    component={Link}
-                    to={item.path}
-                    startIcon={item.icon}
-                    sx={{
-                      color: location.pathname === item.path ? 'primary.main' : 'text.secondary',
-                      '&:hover': {
-                        backgroundColor: 'rgba(26, 115, 232, 0.08)',
-                      },
-                    }}
+                    asChild
+                    variant="ghost"
+                    className={`
+                      ${location.pathname === item.path ? 'text-primary' : 'text-secondary-foreground'}
+                      hover:bg-accent
+                      hover:text-accent-foreground
+                      data-[state=active]:text-primary
+                    `}
                   >
-                    {item.text}
-                  </Button>
+                    <Link to={item.path} className="flex items-center gap-1">
+                      {item.icon}
+                      {item.text}
+                    </Link>
+                  </ShadcnButton>
                 ))}
               </Box>
             )}
 
             <Box sx={{ display: 'flex', gap: 1 }}>
-              <IconButton 
-                color="primary" 
-                onClick={toggleTheme}
-                sx={{ ml: 1 }}
-              >
-                {isDarkMode ? <LightModeIcon /> : <DarkModeIcon />}
-              </IconButton>
+              <ThemeSwitcher />
             </Box>
           </Toolbar>
         </Container>

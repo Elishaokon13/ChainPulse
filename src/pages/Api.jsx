@@ -8,9 +8,7 @@ import {
   ListItemText,
   ListItemIcon,
   Chip,
-  Button,
   TextField,
-  IconButton,
   Tooltip,
   Container
 } from '@mui/material';
@@ -21,6 +19,7 @@ import {
   Check as CheckIcon
 } from '@mui/icons-material';
 import { useState } from 'react';
+import { Button } from "@/components/ui/button";
 
 const endpoints = [
   {
@@ -104,11 +103,10 @@ export default function Api() {
               }}
             />
             <Button
-              variant="contained"
-              color="primary"
-              startIcon={<CopyIcon />}
               onClick={() => navigator.clipboard.writeText('cp_live_xxxxxxxxxxxxxxxx')}
+              className="flex items-center gap-1"
             >
+              <CopyIcon className="h-5 w-5" />
               Copy
             </Button>
           </Box>
@@ -139,12 +137,12 @@ export default function Api() {
                   {endpoint.path}
                 </Typography>
                 <Tooltip title="Copy endpoint">
-                  <IconButton 
+                  <Button 
                     onClick={() => handleCopy(endpoint)}
-                    color="primary"
+                    variant="ghost" size="icon" className="h-8 w-8"
                   >
-                    {copiedEndpoint === endpoint.path ? <CheckIcon /> : <CopyIcon />}
-                  </IconButton>
+                    {copiedEndpoint === endpoint.path ? <CheckIcon className="h-4 w-4" /> : <CopyIcon className="h-4 w-4" />}
+                  </Button>
                 </Tooltip>
               </Box>
 

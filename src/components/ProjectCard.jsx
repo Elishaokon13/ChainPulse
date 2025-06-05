@@ -5,12 +5,12 @@ import {
   Box,
   Chip,
   CircularProgress,
-  IconButton,
   Tooltip
 } from '@mui/material';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 import InfoIcon from '@mui/icons-material/Info';
+import { Button } from "@/components/ui/button"; // Import Shadcn UI Button
 
 export default function ProjectCard({ project, onClick }) {
   const getHypeColor = (hype) => {
@@ -67,12 +67,12 @@ export default function ProjectCard({ project, onClick }) {
             </Box>
           </Box>
           <Tooltip title="View Details">
-            <IconButton size="small" onClick={(e) => {
+            <Button size="icon" variant="ghost" className="h-8 w-8" onClick={(e) => {
               e.stopPropagation();
               onClick(project.id);
             }}>
-              <InfoIcon />
-            </IconButton>
+              <InfoIcon className="h-4 w-4"/>
+            </Button>
           </Tooltip>
         </Box>
 

@@ -86,16 +86,6 @@ Executor has completed Shadcn UI initialization. Ready to add the recommended ba
 
 Executor has completed scanning the codebase and identified key Material-UI components for restyling or replacement with Shadcn UI/Tailwind CSS.
 
-## Executor's Feedback or Assistance Requests
-
-Resolved issue with locating Tailwind setup by performing a codebase search and identifying Vite integration. The previous `npx` error was likely due to the standard init command not being suitable for this setup.
-
-Ready to run `npx shadcn@latest init` to initialize Shadcn UI. This will be an interactive process requiring user input.
-
-Executor has completed Shadcn UI initialization. Ready to add the recommended base CSS styles.
-
-Executor has completed scanning the codebase and identified key Material-UI components for restyling or replacement with Shadcn UI/Tailwind CSS.
-
 Executor is now manually inspecting files in `src/components/` to find Material-UI Button usage, starting with `LoadingState.jsx`. Checked `LoadingState.jsx` and found no Material-UI Button usage. Moving to `MetricDetailsDrawer.jsx`. Checked `MetricDetailsDrawer.jsx` and found Material-UI `IconButton` usage (2 instances). Moving to `ProjectCard.jsx`. Checked `ProjectCard.jsx` and found Material-UI `IconButton` usage (1 instance). Moving to `ProjectDetailsPanel.jsx`. Checked `ProjectDetailsPanel.jsx` and found Material-UI `Button` usage (3 instances) and `IconButton` usage (1 instance). Moving to `ProjectSocialMentions.jsx`. Checked `ProjectSocialMentions.jsx` and found no Material-UI Button usage. Moving to `Dashboard.jsx`. Checked `Dashboard.jsx` and found no Material-UI Button usage. Moving to `src/components/Layout/` directory. Checked directory contents. Now inspecting `MainLayout.jsx`. Checked `MainLayout.jsx` and found no Material-UI Button usage. Moving to `Navbar.jsx`. Checked `Navbar.jsx` and found Material-UI `Button` usage (multiple instances) and `IconButton` usage (multiple instances). Moving to `src/pages/` directory.
 
 Executor is now manually inspecting files in `src/components/Layout/` to find Material-UI Button usage, starting with `MainLayout.jsx`. Checked `MainLayout.jsx` and found no Material-UI Button usage. Moving to `Navbar.jsx`. Checked `Navbar.jsx` and found Material-UI `Button` usage (multiple instances) and `IconButton` usage (multiple instances). Moving to `src/pages/` directory. Listing directory contents.
@@ -105,8 +95,6 @@ Executor is now manually inspecting files in `src/pages/` to find Material-UI Bu
 Executor is now manually inspecting files in `src/pages/`.
 
 Found `package-lock.json` instead of `yarn.lock`. Deleted `package-lock.json` and ran `npm install` successfully. Segmentation fault resolved.
-
-## Lessons
 
 Executor has completed the scan for Material-UI button usage. Identified files with Button/IconButton usage: `src/components/MetricDetailsDrawer.jsx` (IconButton), `src/components/ProjectCard.jsx` (IconButton), `src/components/ProjectDetailsPanel.jsx` (Button, IconButton), `src/components/Layout/Navbar.jsx` (Button, IconButton), `src/pages/Api.jsx` (Button, IconButton), `src/pages/ProjectDetails.jsx` (Button, IconButton), `src/pages/Signals.jsx` (Button), `src/pages/About.jsx` (Button, IconButton).
 
@@ -131,6 +119,8 @@ Starting replacement of Material-UI Buttons and IconButtons with Shadcn UI Butto
 Updated `tailwind.config.js` with Shadcn UI color configuration.
 
 New User Request: Full codebase review and proper setup of a "Grotesk" font.
+
+**Current Status for Grotesk Font Task:** Set Grotesk as the default font for the application by adding `font-grotesk` class to the body in `src/App.css`. **Identified that the font was not being loaded in `index.html` and added a link tag to load Space Grotesk from Google Fonts.**
 
 New Blocking Issue: `[plugin:@tailwindcss/vite:generate:serve] Cannot apply unknown utility class \`border-border\`` persists after updating `tailwind.config.js`.
 
@@ -159,3 +149,7 @@ Executor has completed scanning the codebase and identified key Material-UI comp
 A segmentation fault occurred when running `yarn`. Attempting to resolve by deleting `node_modules` and `yarn.lock`, then running `npm install`.
 
 Found `package-lock.json` instead of `yarn.lock`. Deleting `package-lock.json` and running `npm install`.
+
+Executor has set Grotesk as the default font in `src/App.css`. Please manually test the application to verify the change.
+
+Executor has added a link tag to `index.html` to load the Space Grotesk font, which was the reason it wasn't appearing on the UI. Please manually test the application again to verify that the Grotesk font is now applied.

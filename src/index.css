@@ -1,22 +1,18 @@
-@import url('https://fonts.googleapis.com/css2?family=Grotesk:wght@300;400;500;600;700&display=swap');
 @import "tailwindcss";
 
 
 @layer base {
   * {
     @apply border-[hsl(var(--border))];
-    font-family: 'Grotesk', system-ui, sans-serif;
   }
   body {
     @apply bg-[hsl(var(--background))] text-[hsl(var(--foreground))];
-    font-family: 'Grotesk', system-ui, sans-serif;
   }
 }
 
 [data-theme="dark"] {
   @layer base {
     * {
-      font-family: 'Grotesk', system-ui, sans-serif;
     }
   }
 }
@@ -94,7 +90,6 @@
 /* Existing :root styles */
 :root {
   /* Keep necessary fonts if not using Tailwind's default */
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
 
@@ -141,7 +136,6 @@ button {
   /* padding: 0.6em 1.2em; */ /* Handled by Shadcn button */
   /* font-size: 1em; */ /* Handled by Shadcn button */
   /* font-weight: 500; */ /* Handled by Shadcn button */
-  /* font-family: inherit; */ /* Handled by Shadcn button */
   /* background-color: #1a1a1a; */ /* Handled by Shadcn button */
   /* cursor: pointer; */ /* Handled by Shadcn button */
   /* transition: border-color 0.25s; */ /* Handled by Shadcn button */

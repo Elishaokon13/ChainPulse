@@ -82,116 +82,127 @@ export default function MetricDetailsDrawer({ open, onClose, metric, project, sh
     content = <LoadingState message={`Loading ${metric} details...`} />;
   } else if (error) {
     content = (
-      <Typography color="error" sx={{ p: 2 }}>
+      <p className="text-red-500 p-4 text-center">
         {error}
-      </Typography>
+      </p>
     );
   } else if (metric === 'wallets') {
     content = (
       <>
-        <Typography variant="h6" sx={{ mb: 2 }}>Active Wallets</Typography>
+        <h3 className="text-lg font-semibold mb-2">Active Wallets</h3>
         <FormControl fullWidth sx={{ mb: 2 }}>
           <InputLabel>Timeframe</InputLabel>
           <Select value={timeframe} label="Timeframe" onChange={e => setTimeframe(e.target.value)}>
             {TIMEFRAMES.map(tf => <MenuItem key={tf.value} value={tf.value}>{tf.label}</MenuItem>)}
           </Select>
         </FormControl>
-        <Typography variant="body1" sx={{ mb: 1 }}>
+        <p className="mb-1">
           <b>Total Active Wallets:</b> {project.wallets?.toLocaleString() || 0}
-        </Typography>
-        <Typography variant="body1" sx={{ mb: 1 }}>
+        </p>
+        <p className="mb-1">
           <b>Increase in {timeframe}:</b> +{mockData.wallets.increase}
-        </Typography>
-        <Typography variant="body1" sx={{ mb: 1 }}>
+        </p>
+        <p className="mb-1">
           <b>Inactive Wallets:</b> {mockData.wallets.inactive}
-        </Typography>
+        </p>
       </>
     );
   } else if (metric === 'tvl') {
     content = (
       <>
-        <Typography variant="h6" sx={{ mb: 2 }}>Total Value Locked (TVL)</Typography>
+        <h3 className="text-lg font-semibold mb-2">Total Value Locked (TVL)</h3>
         <FormControl fullWidth sx={{ mb: 2 }}>
           <InputLabel>Timeframe</InputLabel>
           <Select value={timeframe} label="Timeframe" onChange={e => setTimeframe(e.target.value)}>
             {TIMEFRAMES.map(tf => <MenuItem key={tf.value} value={tf.value}>{tf.label}</MenuItem>)}
           </Select>
         </FormControl>
-        <Typography variant="body1" sx={{ mb: 1 }}>
+        <p className="mb-1">
           <b>Current TVL:</b> ${project.tvl?.toLocaleString() || 0}
-        </Typography>
-        <Typography variant="body1" sx={{ mb: 1 }}>
+        </p>
+        <p className="mb-1">
           <b>Change in {timeframe}:</b> {mockData.tvl.percentChange > 0 ? '+' : ''}{mockData.tvl.percentChange}%
-        </Typography>
-        <Typography variant="body1" sx={{ mb: 1 }}>
+        </p>
+        <p className="mb-1">
           <b>Compared to {mockData.tvl.l1Comparison} TVL:</b> ${mockData.tvl.l1Tvl.toLocaleString()}
-        </Typography>
+        </p>
       </>
     );
   } else if (metric === 'mentions') {
     content = (
       <>
-        <Typography variant="h6" sx={{ mb: 2 }}>Social Mentions</Typography>
+        <h3 className="text-lg font-semibold mb-2">Social Mentions</h3>
         <FormControl fullWidth sx={{ mb: 2 }}>
           <InputLabel>Timeframe</InputLabel>
           <Select value={timeframe} label="Timeframe" onChange={e => setTimeframe(e.target.value)}>
             {TIMEFRAMES.map(tf => <MenuItem key={tf.value} value={tf.value}>{tf.label}</MenuItem>)}
           </Select>
         </FormControl>
-        <Typography variant="body1" sx={{ mb: 1 }}>
+        <p className="mb-1">
           <b>Mentions:</b> {mockData.mentions.mentions}
-        </Typography>
-        <Typography variant="body1" sx={{ mb: 1 }}>
+        </p>
+        <p className="mb-1">
           <b>Impressions:</b> {mockData.mentions.impressions}
-        </Typography>
-        <Typography variant="body1" sx={{ mb: 1 }}>
+        </p>
+        <p className="mb-1">
           <b>Likes:</b> {mockData.mentions.likes}
-        </Typography>
-        <Typography variant="body1" sx={{ mb: 1 }}>
+        </p>
+        <p className="mb-1">
           <b>Comments:</b> {mockData.mentions.comments}
-        </Typography>
+        </p>
       </>
     );
   } else if (metric === 'commits') {
     content = (
       <>
-        <Typography variant="h6" sx={{ mb: 2 }}>Development Activity</Typography>
-        <Typography variant="body1" sx={{ mb: 1 }}>
+        <h3 className="text-lg font-semibold mb-2">Development Activity</h3>
+        <p className="mb-1">
           <b>First Commit Date:</b> {mockData.commits.first}
-        </Typography>
-        <Typography variant="body1" sx={{ mb: 1 }}>
+        </p>
+        <p className="mb-1">
           <b>Last Commit Date:</b> {mockData.commits.last}
-        </Typography>
-        <Typography variant="body1" sx={{ mb: 1 }}>
+        </p>
+        <p className="mb-1">
           <b>Total Commits:</b> {mockData.commits.total}
-        </Typography>
+        </p>
       </>
     );
   }
 
   return (
-    <Drawer anchor="right" open={open} onClose={onClose}>
-      <Box sx={{ width: 350, p: 3 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+    <Drawer 
+      anchor="right" 
+      open={open} 
+      onClose={onClose}
+      PaperProps={{
+        sx: {
+          width: { xs: '100%', sm: 350 }, // Responsive width: full on small, 350px on medium+
+          boxSizing: 'border-box',
+          bgcolor: 'background.default',
+        },
+      }}
+    >
+      <div className="w-full max-w-sm mx-auto p-6">
+        <div className="flex justify-between items-center mb-4">
+          <div className="flex items-center gap-2">
             {showBackArrow && (
               <Button onClick={onClose} size="icon" variant="ghost" className="h-8 w-8">
                 <ArrowBackIcon className="h-4 w-4" />
               </Button>
             )}
-            <Typography variant="h6" sx={{ fontWeight: 600, ml: showBackArrow ? 1 : 0 }}>
+            <h2 className={`text-xl font-semibold ${showBackArrow ? 'ml-2' : ''}`}>
               {metric === 'wallets' && 'Active Wallets'}
               {metric === 'tvl' && 'Total Value Locked (TVL)'}
               {metric === 'mentions' && 'Social Mentions'}
               {metric === 'commits' && 'Development Activity'}
-            </Typography>
-          </Box>
+            </h2>
+          </div>
           <Button onClick={onClose} size="icon" variant="ghost" className="h-8 w-8"><CloseIcon className="h-4 w-4" /></Button>
-        </Box>
-        <Divider sx={{ mb: 2 }} />
-        <Typography variant="body1" sx={{ mb: 2 }}>{info.description}</Typography>
+        </div>
+        <hr className="my-4 border-t border-border" />
+        <p className="mb-4 text-secondary-foreground">{info.description}</p>
         {content}
-      </Box>
+      </div>
     </Drawer>
   );
 } 

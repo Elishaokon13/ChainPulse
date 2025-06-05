@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
   Box,
   Typography,
@@ -10,31 +10,28 @@ import {
   Card,
   CardContent,
   Chip,
-  IconButton,
-  Tooltip,
   Paper,
   CircularProgress,
   Tabs,
-  Tab
+  Tab,
+  Button,
 } from '@mui/material';
 import {
   Search as SearchIcon,
   TrendingUp as TrendingUpIcon,
-  TrendingDown as TrendingDownIcon,
   Warning as WarningIcon,
   Info as InfoIcon,
   ArrowUpward as ArrowUpwardIcon,
-  ArrowDownward as ArrowDownwardIcon
+  ArrowDownward as ArrowDownwardIcon,
 } from '@mui/icons-material';
-import { getProjects } from '../data/api';
-import { useNavigate } from 'react-router-dom';
 import ProjectCard from '../components/ProjectCard';
 import ProjectDetailsPanel from '../components/ProjectDetailsPanel';
+import { useTheme } from '../contexts/ThemeContext';
 
 const chains = ['All', 'Ethereum', 'Solana', 'Arbitrum'];
 
 export default function Dashboard() {
-  const navigate = useNavigate();
+  const { isDarkMode } = useTheme();
   const [selectedChain, setSelectedChain] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [projects, setProjects] = useState([]);
@@ -43,22 +40,57 @@ export default function Dashboard() {
   const [selectedTab, setSelectedTab] = useState(0);
   const [selectedProjectId, setSelectedProjectId] = useState(null);
 
-  useEffect(() => {
-    const fetchProjects = async () => {
-      try {
-        setLoading(true);
-        const data = await getProjects();
-        console.log('Received projects from API:', data);
-        setProjects(data);
-        setError(null);
-      } catch (err) {
-        setError('Failed to fetch projects. Please try again later.');
-        console.error('Error fetching projects:', err);
-      } finally {
-        setLoading(false);
+  // Fetch real-time data from DeFiLlama
+  const fetchProjects = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch('https://api.llama.fi/protocols');
+      if (!response.ok) {
+        throw new Error('Failed to fetch data from DeFiLlama');
       }
-    };
+      const data = await response.json();
 
+      // Map DeFiLlama data to the required project structure
+      const mappedProjects = data
+        .filter((protocol) => chains.includes(protocol.chain) || protocol.chains.some((chain) => chains.includes(chain))) // Filter for supported chains
+        .map((protocol, index) => {
+          // Determine the primary chain (if multi-chain, pick the first supported one)
+          const primaryChain = protocol.chains
+            ? protocol.chains.find((chain) => chains.includes(chain)) || protocol.chains[0]
+            : protocol.chain;
+
+          // Calculate TVL growth (simplified: compare current TVL with a mock previous value)
+          const currentTVL = protocol.tvl || 0;
+          const previousTVL = currentTVL * (0.9 + Math.random() * 0.2); // Simulate previous TVL (90%-110% of current)
+          const tvlGrowth = ((currentTVL - previousTVL) / previousTVL) * 100;
+
+          // Simulate wallet growth, social growth, and score (since DeFiLlama doesn't provide these directly)
+          const walletGrowth = (Math.random() * 20 - 10).toFixed(2); // Random between -10% and 10%
+          const socialGrowth = (Math.random() * 30 - 5).toFixed(2); // Random between -5% and 25%
+          const score = Math.floor(Math.random() * 100); // Random score between 0 and 100
+
+          return {
+            id: index.toString(),
+            name: protocol.name,
+            chain: primaryChain,
+            tvlGrowth: parseFloat(tvlGrowth.toFixed(2)),
+            walletGrowth: parseFloat(walletGrowth),
+            socialGrowth: parseFloat(socialGrowth),
+            score,
+          };
+        });
+
+      setProjects(mappedProjects);
+      setError(null);
+    } catch (err) {
+      setError('Failed to fetch projects. Please try again later.');
+      console.error('Error fetching projects:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchProjects();
   }, []);
 
@@ -68,25 +100,26 @@ export default function Dashboard() {
     }
   };
 
-  // Filter projects based on search and chain
-  const filteredProjects = projects.filter(project => {
-    const matchesSearch = project.name.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesChain = selectedChain === 'All' || project.chain === selectedChain;
-    return matchesSearch && matchesChain;
-  });
+  const filteredProjects = useMemo(() => {
+    return projects.filter((project) => {
+      const matchesSearch = project.name
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase());
+      const matchesChain =
+        selectedChain === 'All' || project.chain === selectedChain;
+      return matchesSearch && matchesChain;
+    });
+  }, [projects, searchQuery, selectedChain]);
 
-  // Separate projects into trending and hyped but weak
-  const trendingProjects = filteredProjects.filter(p => p.score >= 70).slice(0, 4);
-  const hypedProjects = filteredProjects.filter(p => p.score < 40).slice(0, 4);
+  const trendingProjects = filteredProjects
+    .filter((p) => p.score >= 70)
+    .slice(0, 4);
+  const hypedProjects = filteredProjects
+    .filter((p) => p.score < 40)
+    .slice(0, 4);
   const signalProjects = [...trendingProjects, ...hypedProjects].slice(0, 4);
 
-  console.log('Filtered projects:', {
-    all: projects.length,
-    filtered: filteredProjects.length,
-    trending: trendingProjects.length,
-    hyped: hypedProjects.length,
-    signal: signalProjects.length
-  });
+  const tabFilteredProjects = selectedTab === 0 ? trendingProjects : hypedProjects;
 
   const handleProjectClick = (projectId) => {
     setSelectedProjectId(projectId);
@@ -97,16 +130,29 @@ export default function Dashboard() {
   };
 
   const GrowthMetric = ({ value, label }) => {
-    const isPositive = value > 0;
+    const isPositive = value >= 0;
     const color = isPositive ? 'success.main' : 'error.main';
     const Icon = isPositive ? ArrowUpwardIcon : ArrowDownwardIcon;
-    
+
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Typography color="text.secondary">{label}</Typography>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 0.75 }}>
+        <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
+          {label}
+        </Typography>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
           <Icon sx={{ color, fontSize: '1rem' }} />
-          <Typography sx={{ color, fontWeight: 500 }}>
+          <Typography
+            variant="body2"
+            sx={{
+              color,
+              fontWeight: 600,
+              background: isPositive
+                ? 'linear-gradient(90deg, rgba(34, 197, 94, 0.1) 0%, rgba(34, 197, 94, 0) 100%)'
+                : 'linear-gradient(90deg, rgba(239, 68, 68, 0.1) 0%, rgba(239, 68, 68, 0) 100%)',
+              px: 1,
+              borderRadius: 1,
+            }}
+          >
             {Math.abs(value)}%
           </Typography>
         </Box>
@@ -120,8 +166,19 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
-        <CircularProgress />
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh' }}>
+        <CircularProgress
+          size={48}
+          sx={{
+            color: 'primary.main',
+            animation: 'pulse 1.5s infinite',
+            '@keyframes pulse': {
+              '0%': { transform: 'scale(1)', opacity: 1 },
+              '50%': { transform: 'scale(1.2)', opacity: 0.7 },
+              '100%': { transform: 'scale(1)', opacity: 1 },
+            },
+          }}
+        />
       </Box>
     );
   }
@@ -129,32 +186,82 @@ export default function Dashboard() {
   if (error) {
     return (
       <Box sx={{ p: 4, textAlign: 'center' }}>
-        <Typography color="error">{error}</Typography>
+        <Typography variant="h6" color="error.main" gutterBottom sx={{ fontWeight: 600 }}>
+          {error}
+        </Typography>
+        <Button
+          variant="contained"
+          onClick={fetchProjects}
+          sx={{
+            mt: 2,
+            borderRadius: 3,
+            background: 'linear-gradient(45deg, #3B82F6 30%, #60A5FA 90%)',
+            color: 'primary.contrastText',
+            fontWeight: 600,
+            px: 4,
+            py: 1,
+            boxShadow: '0 4px 15px rgba(59, 130, 246, 0.3)',
+            '&:hover': {
+              background: 'linear-gradient(45deg, #2563EB 30%, #3B82F6 90%)',
+              boxShadow: '0 6px 20px rgba(59, 130, 246, 0.5)',
+              transform: 'translateY(-2px)',
+            },
+            transition: 'all 0.3s ease',
+          }}
+        >
+          Retry
+        </Button>
       </Box>
     );
   }
 
   return (
-    <Box sx={{ pb: 4, px: { xs: 2, sm: 3, md: 4 } }}>
-      <Box sx={{ pb: 4 }}>
+    <Box
+      sx={{
+        py: 8,
+        px: { xs: 3, sm: 4, md: 6 },
+        minHeight: '100vh',
+        background: isDarkMode
+          ? 'linear-gradient(135deg, #0F172A 0%, #1E293B 100%)'
+          : 'linear-gradient(135deg, #F8FAFC 0%, #E2E8F0 100%)',
+        position: 'relative',
+        overflow: 'hidden',
+        '&:before': {
+          content: '""',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          background: isDarkMode
+            ? 'radial-gradient(circle at 20% 30%, rgba(59, 130, 246, 0.1) 0%, transparent 70%)'
+            : 'radial-gradient(circle at 20% 30%, rgba(59, 130, 246, 0.05) 0%, transparent 70%)',
+          zIndex: 0,
+        },
+      }}
+    >
+      <Box sx={{ maxWidth: '1400px', mx: 'auto', position: 'relative', zIndex: 1 }}>
         {/* Header Section */}
-        <Box sx={{ mb: 4 }}>
-          <Typography 
-            variant="h4" 
-            component="h1" 
+        <Box sx={{ mb: 6 }}>
+          <Typography
+            variant="display1"
+            component="h1"
             gutterBottom
-            sx={{ 
-              fontFamily: 'Charter',
+            sx={{
               fontWeight: 600,
-              color: 'primary.main',
-              mb: 2
+              color: 'text.primary',
+              letterSpacing: '-0.03em',
+              lineHeight: 1.1,
+              textShadow: isDarkMode
+                ? '0 0 10px rgba(147, 197, 253, 0.3)'
+                : 'none',
             }}
           >
             ChainPulse – Spot Projects with Onchain Growth Before the Hype
           </Typography>
 
           {/* Search and Filter Bar */}
-          <Box sx={{ display: 'flex', gap: 2, mb: 4 }}>
+          <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 2, mt: 4 }}>
             <TextField
               fullWidth
               placeholder="Search by project name or token..."
@@ -163,14 +270,35 @@ export default function Dashboard() {
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                    <SearchIcon color="primary" />
+                    <SearchIcon sx={{ color: 'text.secondary' }} />
                   </InputAdornment>
                 ),
               }}
               sx={{
                 '& .MuiOutlinedInput-root': {
-                  borderRadius: 2,
-                  backgroundColor: 'background.paper',
+                  borderRadius: 3,
+                  backgroundColor: isDarkMode
+                    ? 'rgba(30, 41, 59, 0.8)'
+                    : 'rgba(255, 255, 255, 0.9)',
+                  backdropFilter: 'blur(10px)',
+                  border: '1px solid',
+                  borderColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
+                  transition: 'all 0.3s ease',
+                  '&:hover .MuiOutlinedInput-notchedOutline': {
+                    borderColor: 'primary.light',
+                  },
+                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                    borderColor: 'primary.main',
+                    borderWidth: '2px',
+                    boxShadow: '0 0 10px rgba(59, 130, 246, 0.3)',
+                  },
+                  '& .MuiOutlinedInput-notchedOutline': {
+                    borderColor: 'transparent',
+                  },
+                },
+                '& .MuiInputBase-input': {
+                  color: 'text.primary',
+                  fontWeight: 500,
                 },
               }}
             />
@@ -180,15 +308,57 @@ export default function Dashboard() {
               onChange={handleChainChange}
               aria-label="chain filter"
               sx={{
+                display: 'flex',
+                flexWrap: 'wrap',
+                gap: 1.5,
                 '& .MuiToggleButton-root': {
-                  borderRadius: 2,
+                  borderRadius: '20px !important',
                   textTransform: 'none',
                   px: 3,
+                  py: 0.75,
+                  border: 'none',
+                  backgroundColor: isDarkMode
+                    ? 'rgba(30, 41, 59, 0.8)'
+                    : 'rgba(255, 255, 255, 0.9)',
+                  backdropFilter: 'blur(10px)',
+                  color: 'text.secondary',
+                  fontSize: '0.9rem',
+                  fontWeight: 600,
+                  transition: 'all 0.3s ease',
+                  '&.Mui-selected': {
+                    background: isDarkMode
+                      ? 'linear-gradient(45deg, #3B82F6 30%, #60A5FA 90%)'
+                      : 'linear-gradient(45deg, #1E293B 30%, #334155 90%)',
+                    color: 'primary.contrastText',
+                    boxShadow: '0 0 15px rgba(59, 130, 246, 0.4)',
+                    '&:hover': {
+                      background: isDarkMode
+                        ? 'linear-gradient(45deg, #2563EB 30%, #3B82F6 90%)'
+                        : 'linear-gradient(45deg, #0F172A 30%, #1E293B 90%)',
+                    },
+                  },
+                  '&:hover': {
+                    backgroundColor: isDarkMode
+                      ? 'rgba(59, 130, 246, 0.1)'
+                      : 'rgba(30, 41, 59, 0.1)',
+                    boxShadow: '0 0 10px rgba(59, 130, 246, 0.2)',
+                  },
                 },
               }}
             >
               {chains.map((chain) => (
-                <ToggleButton key={chain} value={chain}>
+                <ToggleButton
+                  key={chain}
+                  value={chain}
+                  sx={{
+                    ...(chain === 'All' && {
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 0.75,
+                    }),
+                  }}
+                >
+                  {chain === 'All' && <SearchIcon sx={{ fontSize: '1.1rem' }} />}
                   {chain}
                 </ToggleButton>
               ))}
@@ -197,230 +367,409 @@ export default function Dashboard() {
         </Box>
 
         {/* Trending Projects Section */}
-        <Box sx={{ mb: 6 }}>
-          <Typography 
-            variant="h5" 
-            sx={{ 
-              mb: 3,
-              display: 'flex',
-              alignItems: 'center',
-              gap: 1,
-              color: 'primary.main'
-            }}
-          >
-            <TrendingUpIcon /> Trending Projects
-          </Typography>
-          <Grid container spacing={3}>
-            {trendingProjects.map((project) => (
-              <Grid item xs={12} sm={6} md={3} key={project.id}>
-                <Card 
-                  sx={{ 
-                    height: '100%',
-                    background: 'linear-gradient(145deg, #ffffff 0%, #e8f0fe 100%)',
-                    border: '1px solid rgba(26, 115, 232, 0.1)',
-                    cursor: 'pointer',
-                    transition: 'transform 0.2s, box-shadow 0.2s',
-                    '&:hover': {
-                      transform: 'translateY(-4px)',
-                      boxShadow: '0 4px 20px rgba(0,0,0,0.1)'
-                    }
-                  }}
-                  onClick={() => handleProjectClick(project.id)}
-                >
-                  <CardContent>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-                      <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                        {project.name}
-                      </Typography>
-                      <Chip 
-                        label={project.chain} 
-                        size="small" 
-                        sx={{ 
-                          backgroundColor: 'rgba(26, 115, 232, 0.1)',
-                          color: 'primary.main'
-                        }} 
-                      />
-                    </Box>
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                      <GrowthMetric value={15} label="TVL Growth" />
-                      <GrowthMetric value={8} label="Wallet Growth" />
-                      <GrowthMetric value={-3} label="Social Growth" />
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <Typography color="text.secondary">Score</Typography>
-                        <Typography 
-                          sx={{ 
-                            color: project.score >= 70 ? 'success.main' : 
-                                  project.score >= 40 ? 'warning.main' : 'error.main',
-                            fontWeight: 500
-                          }}
-                        >
-                          {project.score}/100
+        {trendingProjects.length > 0 && (
+          <Box sx={{ mb: 8 }}>
+            <Typography
+              variant="h5"
+              sx={{
+                mb: 4,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1,
+                color: 'primary.main',
+                fontWeight: 600,
+                textShadow: isDarkMode
+                  ? '0 0 8px rgba(59, 130, 246, 0.3)'
+                  : 'none',
+              }}
+            >
+              <TrendingUpIcon fontSize="medium" /> Trending Projects
+            </Typography>
+            <Grid container spacing={3}>
+              {trendingProjects.map((project) => (
+                <Grid item xs={12} sm={6} md={3} key={project.id}>
+                  <Card
+                    sx={{
+                      height: '100%',
+                      border: 'none',
+                      borderRadius: 4,
+                      cursor: 'pointer',
+                      backgroundColor: isDarkMode
+                        ? 'rgba(30, 41, 59, 0.7)'
+                        : 'rgba(255, 255, 255, 0.7)',
+                      backdropFilter: 'blur(12px)',
+                      transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+                      boxShadow: isDarkMode
+                        ? '0 4px 20px rgba(59, 130, 246, 0.2)'
+                        : '0 4px 20px rgba(0, 0, 0, 0.05)',
+                      border: isDarkMode
+                        ? '1px solid rgba(255, 255, 255, 0.1)'
+                        : '1px solid rgba(0, 0, 0, 0.05)',
+                      '&:hover': {
+                        transform: 'translateY(-4px)',
+                        boxShadow: isDarkMode
+                          ? '0 8px 30px rgba(59, 130, 246, 0.4)'
+                          : '0 8px 30px rgba(0, 0, 0, 0.1)',
+                      },
+                    }}
+                    onClick={() => handleProjectClick(project.id)}
+                  >
+                    <CardContent sx={{ p: 3 }}>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                        <Typography variant="h6" sx={{ fontWeight: 600, color: 'text.primary' }}>
+                          {project.name}
                         </Typography>
+                        <Chip
+                          label={project.chain}
+                          size="small"
+                          sx={{
+                            background: isDarkMode
+                              ? 'linear-gradient(45deg, #3B82F6 30%, #60A5FA 90%)'
+                              : 'linear-gradient(45deg, #1E293B 30%, #334155 90%)',
+                            color: 'primary.contrastText',
+                            fontWeight: 600,
+                            borderRadius: 2,
+                            boxShadow: isDarkMode
+                              ? '0 0 8px rgba(59, 130, 246, 0.3)'
+                              : 'none',
+                          }}
+                        />
                       </Box>
-                    </Box>
-                  </CardContent>
-                </Card>
-              </Grid>
-            ))}
-          </Grid>
-        </Box>
+                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                        <GrowthMetric value={project.tvlGrowth || 0} label="TVL Growth" />
+                        <GrowthMetric value={project.walletGrowth || 0} label="Wallet Growth" />
+                        <GrowthMetric value={project.socialGrowth || 0} label="Social Growth" />
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', pt: 1 }}>
+                          <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
+                            Score
+                          </Typography>
+                          <Typography
+                            variant="body2"
+                            sx={{
+                              color:
+                                project.score >= 70
+                                  ? 'success.main'
+                                  : project.score >= 40
+                                  ? 'warning.main'
+                                  : 'error.main',
+                              fontWeight: 600,
+                              background: isDarkMode
+                                ? 'rgba(59, 130, 246, 0.1)'
+                                : 'rgba(30, 41, 59, 0.05)',
+                              px: 1.5,
+                              borderRadius: 2,
+                            }}
+                          >
+                            {project.score}/100
+                          </Typography>
+                        </Box>
+                      </Box>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              ))}
+            </Grid>
+          </Box>
+        )}
 
         {/* Hyped but Weak Projects Section */}
-        <Box sx={{ mb: 6 }}>
-          <Typography 
-            variant="h5" 
-            sx={{ 
-              mb: 3,
-              display: 'flex',
-              alignItems: 'center',
-              gap: 1,
-              color: 'warning.main'
-            }}
-          >
-            <WarningIcon /> Hyped but Weak Projects
-          </Typography>
-          <Grid container spacing={3}>
-            {hypedProjects.map((project) => (
-              <Grid item xs={12} sm={6} md={3} key={project.id}>
-                <Paper 
-                  sx={{ 
-                    p: 3,
-                    background: 'linear-gradient(145deg, #fff8e1 0%, #fff3e0 100%)',
-                    border: '1px solid rgba(255, 152, 0, 0.1)',
-                    cursor: 'pointer',
-                    transition: 'transform 0.2s, box-shadow 0.2s',
-                    '&:hover': {
-                      transform: 'translateY(-4px)',
-                      boxShadow: '0 4px 20px rgba(0,0,0,0.1)'
-                    }
-                  }}
-                  onClick={() => handleProjectClick(project.id)}
-                >
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-                    <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                      {project.name}
-                    </Typography>
-                    <Chip 
-                      label={project.chain} 
-                      size="small" 
-                      sx={{ 
-                        backgroundColor: 'rgba(255, 152, 0, 0.1)',
-                        color: 'warning.main'
-                      }} 
-                    />
-                  </Box>
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                    <GrowthMetric value={-5} label="TVL Growth" />
-                    <GrowthMetric value={-2} label="Wallet Growth" />
-                    <GrowthMetric value={25} label="Social Growth" />
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <Typography color="text.secondary">Score</Typography>
-                      <Typography color="warning.main" fontWeight={500}>
-                        {project.score}/100
-                      </Typography>
-                    </Box>
-                  </Box>
-                </Paper>
-              </Grid>
-            ))}
-          </Grid>
-        </Box>
+        {hypedProjects.length > 0 && (
+          <Box sx={{ mb: 8 }}>
+            <Typography
+              variant="h5"
+              sx={{
+                mb: 4,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1,
+                color: 'warning.main',
+                fontWeight: 600,
+                textShadow: isDarkMode
+                  ? '0 0 8px rgba(245, 158, 11, 0.3)'
+                  : 'none',
+              }}
+            >
+              <WarningIcon fontSize="medium" /> Hyped but Weak Projects
+            </Typography>
+            <Grid container spacing={3}>
+              {hypedProjects.map((project) => (
+                <Grid item xs={12} sm={6} md={3} key={project.id}>
+                  <Card
+                    sx={{
+                      height: '100%',
+                      border: 'none',
+                      borderRadius: 4,
+                      cursor: 'pointer',
+                      backgroundColor: isDarkMode
+                        ? 'rgba(30, 41, 59, 0.7)'
+                        : 'rgba(255, 255, 255, 0.7)',
+                      backdropFilter: 'blur(12px)',
+                      transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+                      boxShadow: isDarkMode
+                        ? '0 4px 20px rgba(245, 158, 11, 0.2)'
+                        : '0 4px 20px rgba(0, 0, 0, 0.05)',
+                      border: isDarkMode
+                        ? '1px solid rgba(255, 255, 255, 0.1)'
+                        : '1px solid rgba(0, 0, 0, 0.05)',
+                      '&:hover': {
+                        transform: 'translateY(-4px)',
+                        boxShadow: isDarkMode
+                          ? '0 8px 30px rgba(245, 158, 11, 0.4)'
+                          : '0 8px 30px rgba(0, 0, 0, 0.1)',
+                      },
+                    }}
+                    onClick={() => handleProjectClick(project.id)}
+                  >
+                    <CardContent sx={{ p: 3 }}>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                        <Typography variant="h6" sx={{ fontWeight: 600, color: 'text.primary' }}>
+                          {project.name}
+                        </Typography>
+                        <Chip
+                          label={project.chain}
+                          size="small"
+                          sx={{
+                            background: isDarkMode
+                              ? 'linear-gradient(45deg, #F59E0B 30%, #FBBF24 90%)'
+                              : 'linear-gradient(45deg, #F59E0B 30%, #FBBF24 90%)',
+                            color: 'warning.contrastText',
+                            fontWeight: 600,
+                            borderRadius: 2,
+                            boxShadow: isDarkMode
+                              ? '0 0 8px rgba(245, 158, 11, 0.3)'
+                              : 'none',
+                          }}
+                        />
+                      </Box>
+                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                        <GrowthMetric value={project.tvlGrowth || 0} label="TVL Growth" />
+                        <GrowthMetric value={project.walletGrowth || 0} label="Wallet Growth" />
+                        <GrowthMetric value={project.socialGrowth || 0} label="Social Growth" />
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', pt: 1 }}>
+                          <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
+                            Score
+                          </Typography>
+                          <Typography
+                            variant="body2"
+                            sx={{
+                              color: 'warning.main',
+                              fontWeight: 600,
+                              background: isDarkMode
+                                ? 'rgba(245, 158, 11, 0.1)'
+                                : 'rgba(245, 158, 11, 0.05)',
+                              px: 1.5,
+                              borderRadius: 2,
+                            }}
+                          >
+                            {project.score}/100
+                          </Typography>
+                        </Box>
+                      </Box>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              ))}
+            </Grid>
+          </Box>
+        )}
 
         {/* Signal of the Week Section */}
-        <Box sx={{ mb: 6 }}>
-          <Typography 
-            variant="h5" 
-            sx={{ 
-              mb: 3,
-              display: 'flex',
-              alignItems: 'center',
-              gap: 1,
-              color: 'primary.main'
+        {signalProjects.length > 0 && (
+          <Box sx={{ mb: 8 }}>
+            <Typography
+              variant="h5"
+              sx={{
+                mb: 4,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1,
+                color: 'primary.main',
+                fontWeight: 600,
+                textShadow: isDarkMode
+                  ? '0 0 8px rgba(59, 130, 246, 0.3)'
+                  : 'none',
+              }}
+            >
+              <InfoIcon fontSize="medium" /> Signal of the Week
+            </Typography>
+            <Grid container spacing={3}>
+              {signalProjects.map((project) => (
+                <Grid item xs={12} sm={6} md={3} key={project.id}>
+                  <Card
+                    sx={{
+                      height: '100%',
+                      border: 'none',
+                      borderRadius: 4,
+                      cursor: 'pointer',
+                      backgroundColor: isDarkMode
+                        ? 'rgba(30, 41, 59, 0.7)'
+                        : 'rgba(255, 255, 255, 0.7)',
+                      backdropFilter: 'blur(12px)',
+                      transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+                      boxShadow: isDarkMode
+                        ? '0 4px 20px rgba(59, 130, 246, 0.2)'
+                        : '0 4px 20px rgba(0, 0, 0, 0.05)',
+                      border: isDarkMode
+                        ? '1px solid rgba(255, 255, 255, 0.1)'
+                        : '1px solid rgba(0, 0, 0, 0.05)',
+                      '&:hover': {
+                        transform: 'translateY(-4px)',
+                        boxShadow: isDarkMode
+                          ? '0 8px 30px rgba(59, 130, 246, 0.4)'
+                          : '0 8px 30px rgba(0, 0, 0, 0.1)',
+                      },
+                    }}
+                    onClick={() => handleProjectClick(project.id)}
+                  >
+                    <CardContent sx={{ p: 3 }}>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                        <Typography variant="h6" sx={{ fontWeight: 600, color: 'text.primary' }}>
+                          {project.name}
+                        </Typography>
+                        <Chip
+                          label={project.chain}
+                          size="small"
+                          sx={{
+                            background: isDarkMode
+                              ? 'linear-gradient(45deg, #3B82F6 30%, #60A5FA 90%)'
+                              : 'linear-gradient(45deg, #1E293B 30%, #334155 90%)',
+                            color: 'primary.contrastText',
+                            fontWeight: 600,
+                            borderRadius: 2,
+                            boxShadow: isDarkMode
+                              ? '0 0 8px rgba(59, 130, 246, 0.3)'
+                              : 'none',
+                          }}
+                        />
+                      </Box>
+                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                        <GrowthMetric value={project.tvlGrowth || 0} label="TVL Growth" />
+                        <GrowthMetric value={project.walletGrowth || 0} label="Wallet Growth" />
+                        <GrowthMetric value={project.socialGrowth || 0} label="Social Growth" />
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', pt: 1 }}>
+                          <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
+                            Score
+                          </Typography>
+                          <Typography
+                            variant="body2"
+                            sx={{
+                              color:
+                                project.score >= 70
+                                  ? 'success.main'
+                                  : project.score >= 40
+                                  ? 'warning.main'
+                                  : 'error.main',
+                              fontWeight: 600,
+                              background: isDarkMode
+                                ? 'rgba(59, 130, 246, 0.1)'
+                                : 'rgba(30, 41, 59, 0.05)',
+                              px: 1.5,
+                              borderRadius: 2,
+                            }}
+                          >
+                            {project.score}/100
+                          </Typography>
+                        </Box>
+                      </Box>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              ))}
+            </Grid>
+          </Box>
+        )}
+
+        {/* Tabs for Filtering Projects */}
+        <Paper
+          sx={{
+            mb: 5,
+            backgroundColor: isDarkMode
+              ? 'rgba(30, 41, 59, 0.7)'
+              : 'rgba(255, 255, 255, 0.7)',
+            backdropFilter: 'blur(12px)',
+            border: 'none',
+            borderRadius: 3,
+            boxShadow: isDarkMode
+              ? '0 4px 20px rgba(59, 130, 246, 0.2)'
+              : '0 4px 20px rgba(0, 0, 0, 0.05)',
+          }}
+        >
+          <Tabs
+            value={selectedTab}
+            onChange={handleTabChange}
+            sx={{
+              '& .MuiTab-root': {
+                textTransform: 'none',
+                fontWeight: 600,
+                fontSize: '1rem',
+                color: 'text.secondary',
+                '&.Mui-selected': {
+                  color: 'primary.main',
+                },
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  color: 'primary.light',
+                },
+              },
+              '& .MuiTabs-indicator': {
+                background: isDarkMode
+                  ? 'linear-gradient(90deg, #3B82F6, #60A5FA)'
+                  : 'linear-gradient(90deg, #1E293B, #334155)',
+                height: 3,
+                boxShadow: isDarkMode
+                  ? '0 0 10px rgba(59, 130, 246, 0.5)'
+                  : 'none',
+              },
             }}
           >
-            <InfoIcon /> Signal of the Week
-          </Typography>
-          <Grid container spacing={3}>
-            {signalProjects.map((project) => (
-              <Grid item xs={12} sm={6} md={3} key={project.id}>
-                <Paper 
-                  sx={{ 
-                    p: 3,
-                    background: 'linear-gradient(145deg, #ffffff 0%, #e8f0fe 100%)',
-                    border: '1px solid rgba(26, 115, 232, 0.1)',
-                    cursor: 'pointer',
-                    transition: 'transform 0.2s, box-shadow 0.2s',
+            <Tab label="Trending Projects" />
+            <Tab label="Hyped but Weak" />
+          </Tabs>
+        </Paper>
+
+        {/* Display Filtered Projects Based on Tabs */}
+        <Grid container spacing={3}>
+          {tabFilteredProjects.length > 0 ? (
+            tabFilteredProjects.map((project) => (
+              <Grid item xs={12} sm={6} md={4} key={project.id}>
+                <ProjectCard
+                  project={project}
+                  onClick={handleProjectClick}
+                  sx={{
+                    backgroundColor: isDarkMode
+                      ? 'rgba(30, 41, 59, 0.7)'
+                      : 'rgba(255, 255, 255, 0.7)',
+                    backdropFilter: 'blur(12px)',
+                    border: 'none',
+                    borderRadius: 4,
+                    boxShadow: isDarkMode
+                      ? '0 4px 20px rgba(59, 130, 246, 0.2)'
+                      : '0 4px 20px rgba(0, 0, 0, 0.05)',
                     '&:hover': {
                       transform: 'translateY(-4px)',
-                      boxShadow: '0 4px 20px rgba(0,0,0,0.1)'
-                    }
+                      boxShadow: isDarkMode
+                        ? '0 8px 30px rgba(59, 130, 246, 0.4)'
+                        : '0 8px 30px rgba(0, 0, 0, 0.1)',
+                    },
                   }}
-                  onClick={() => handleProjectClick(project.id)}
-                >
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-                    <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                      {project.name}
-                    </Typography>
-                    <Chip 
-                      label={project.chain} 
-                      size="small" 
-                      sx={{ 
-                        backgroundColor: 'rgba(26, 115, 232, 0.1)',
-                        color: 'primary.main'
-                      }} 
-                    />
-                  </Box>
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                    <GrowthMetric value={12} label="TVL Growth" />
-                    <GrowthMetric value={7} label="Wallet Growth" />
-                    <GrowthMetric value={-2} label="Social Growth" />
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <Typography color="text.secondary">Score</Typography>
-                      <Typography 
-                        sx={{ 
-                          color: project.score >= 70 ? 'success.main' : 
-                                project.score >= 40 ? 'warning.main' : 'error.main',
-                          fontWeight: 500
-                        }}
-                      >
-                        {project.score}/100
-                      </Typography>
-                    </Box>
-                  </Box>
-                </Paper>
+                />
               </Grid>
-            ))}
-          </Grid>
-        </Box>
+            ))
+          ) : (
+            <Grid item xs={12}>
+              <Typography sx={{ textAlign: 'center', color: 'text.secondary', py: 4, fontWeight: 500 }}>
+                No projects found for this category.
+              </Typography>
+            </Grid>
+          )}
+        </Grid>
+
+        <ProjectDetailsPanel
+          projectId={selectedProjectId}
+          open={!!selectedProjectId}
+          onClose={handleCloseDetails}
+        />
       </Box>
-
-      <Paper sx={{ mb: 4 }}>
-        <Tabs
-          value={selectedTab}
-          onChange={handleTabChange}
-          sx={{ borderBottom: 1, borderColor: 'divider' }}
-        >
-          <Tab label="Trending Projects" />
-          <Tab label="Hyped but Weak" />
-        </Tabs>
-      </Paper>
-
-      <Grid container spacing={3}>
-        {filteredProjects.map((project) => (
-          <Grid item xs={12} sm={6} md={4} key={project.id}>
-            <ProjectCard 
-              project={project} 
-              onClick={handleProjectClick}
-            />
-          </Grid>
-        ))}
-      </Grid>
-
-      <ProjectDetailsPanel
-        projectId={selectedProjectId}
-        open={!!selectedProjectId}
-        onClose={handleCloseDetails}
-      />
     </Box>
   );
-} 
+}

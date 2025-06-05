@@ -93,78 +93,72 @@ export default function Navbar() {
   );
 
   return (
-    <Box sx={{ flexGrow: 1 }}>
-      <AppBar 
-        position="sticky" 
-        elevation={0}
-        sx={{ 
-          backgroundColor: 'background.paper',
-          borderBottom: '1px solid',
-          borderColor: 'divider'
-        }}
-      >
-        <Container maxWidth="xl">
-          <Toolbar disableGutters>
-            {isMobile && (
-              <Button
-                color="primary"
-                aria-label="open drawer"
-                edge="start"
-                onClick={handleDrawerToggle}
-                className="mr-2" size="icon" variant="ghost"
-              >
-                <MenuIcon className="h-6 w-6"/>
-              </Button>
-            )}
+    <nav className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="container mx-auto px-4">
+        <div className="relative flex h-16 items-center justify-between">
+          {/* Mobile menu button */}
+          {isMobile && (
+            <Button
+              color="primary"
+              aria-label="open drawer"
+              edge="start"
+              onClick={handleDrawerToggle}
+              className="mr-2 md:hidden" size="icon" variant="ghost"
+            >
+              <MenuIcon className="h-6 w-6"/>
+            </Button>
+          )}
 
+          {/* Logo */}
+          <Link
+            to="/"
+            className="flex items-center gap-1 mr-6"
+          >
             <Typography
               variant="h6"
-              component={Link}
-              to="/"
+              component="div"
               sx={{
-                mr: 2,
                 fontFamily: 'Charter',
                 fontWeight: 600,
                 color: 'primary.main',
                 textDecoration: 'none',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 1
               }}
             >
               ChainPulse
             </Typography>
+          </Link>
 
-            {!isMobile && (
-              <Box sx={{ display: 'flex', gap: 1, flexGrow: 1 }}>
-                {navItems.map((item) => (
-                  <ShadcnButton
-                    key={item.text}
-                    asChild
-                    variant="ghost"
-                    className={`
-                      ${location.pathname === item.path ? 'text-primary' : 'text-secondary-foreground'}
-                      hover:bg-accent
-                      hover:text-accent-foreground
-                      data-[state=active]:text-primary
-                    `}
-                  >
-                    <Link to={item.path} className="flex items-center gap-1">
-                      {item.icon}
-                      {item.text}
-                    </Link>
-                  </ShadcnButton>
-                ))}
-              </Box>
-            )}
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex flex-grow items-center gap-1">
+            {navItems.map((item) => (
+              <ShadcnButton
+                key={item.text}
+                asChild
+                variant="ghost"
+                className={`
+                  ${location.pathname === item.path ? 'text-primary' : 'text-secondary-foreground'}
+                  hover:bg-accent
+                  hover:text-accent-foreground
+                  data-[state=active]:text-primary
+                  h-auto
+                `}
+              >
+                <Link to={item.path} className="flex items-center gap-1">
+                  {item.icon}
+                  <span>{item.text}</span>
+                </Link>
+              </ShadcnButton>
+            ))}
+          </div>
 
-            <Box sx={{ display: 'flex', gap: 1 }}>
-              <ThemeSwitcher />
-            </Box>
-          </Toolbar>
-        </Container>
-      </AppBar>
+          {/* Theme Switcher */}
+          <div className="flex items-center gap-1">
+            <ThemeSwitcher />
+          </div>
+        </div>
+      </div>
 
+      {/* Mobile Drawer (Material UI - for now) */}
       <Drawer
         variant="temporary"
         anchor="left"
@@ -184,6 +178,6 @@ export default function Navbar() {
       >
         {drawer}
       </Drawer>
-    </Box>
+    </nav>
   );
 } 

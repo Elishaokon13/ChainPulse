@@ -58,20 +58,20 @@ export default function ProjectDetailsPanel({ projectId, open, onClose }) {
   const getHypeColor = (hype) => {
     switch (hype?.toLowerCase()) {
       case 'high':
-        return 'error';
+        return 'text-red-500';
       case 'medium':
-        return 'warning';
+        return 'text-yellow-500';
       case 'low':
-        return 'success';
+        return 'text-green-500';
       default:
-        return 'default';
+        return 'text-gray-500';
     }
   };
 
   const getScoreColor = (score) => {
-    if (score >= 70) return 'success';
-    if (score >= 40) return 'warning';
-    return 'error';
+    if (score >= 70) return 'text-green-500';
+    if (score >= 40) return 'text-yellow-500';
+    return 'text-red-500';
   };
 
   const handleMetricClick = (metric) => {
@@ -88,253 +88,205 @@ export default function ProjectDetailsPanel({ projectId, open, onClose }) {
       anchor="right"
       open={open}
       onClose={onClose}
-      sx={{
-        width: drawerWidth,
-        flexShrink: 0,
-        '& .MuiDrawer-paper': {
-          width: drawerWidth,
+      PaperProps={{
+        sx: {
+          width: { xs: '100%', sm: drawerWidth },
           boxSizing: 'border-box',
           bgcolor: 'background.default',
         },
       }}
       ModalProps={{
-        keepMounted: true, // Better mobile performance
+        keepMounted: true,
       }}
     >
-      <Box sx={{ p: 3 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-          <Typography variant="h5" sx={{ fontWeight: 600 }}>
+      <div className="p-6">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-xl font-semibold">
             Project Details
-          </Typography>
+          </h2>
           <Button onClick={onClose} size="icon" variant="ghost" className="h-8 w-8">
             <CloseIcon className="h-4 w-4"/>
           </Button>
-        </Box>
+        </div>
 
         {loading ? (
           <LoadingState message="Loading project details..." />
         ) : error ? (
-          <Typography color="error" sx={{ p: 4, textAlign: 'center' }}>
+          <p className="text-red-500 p-4 text-center">
             {error}
-          </Typography>
+          </p>
         ) : project ? (
-          <Box>
-            <Box sx={{ mb: 3 }}>
-              <Typography variant="h4" sx={{ mb: 1, fontWeight: 600 }}>
+          <div>
+            <div className="mb-6">
+              <h3 className="text-2xl font-semibold mb-2">
                 {project.name}
-              </Typography>
-              <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
-                <Chip 
-                  label={project.chain} 
-                  size="small"
-                  sx={{ bgcolor: 'primary.main', color: 'white' }}
-                />
-                <Chip 
-                  label={`Hype: ${project.hype}`}
-                  size="small"
-                  color={getHypeColor(project.hype)}
-                />
-              </Box>
-              <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
+              </h3>
+              <div className="flex gap-2 items-center mb-4">
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-500 text-white">
+                  {project.chain}
+                </span>
+                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${project.hype?.toLowerCase() === 'high' ? 'bg-red-100 text-red-800' : project.hype?.toLowerCase() === 'medium' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800'}`}>
+                  Hype: {project.hype}
+                </span>
+              </div>
+              <p className="text-secondary-foreground mb-4">
                 {project.description}
-              </Typography>
-            </Box>
+              </p>
+            </div>
 
-            <Divider sx={{ my: 3 }} />
+            <hr className="my-6 border-t border-border" />
 
-            <Grid container spacing={3}>
-              <Grid item xs={12}>
-                <Paper sx={{ p: 2 }}>
-                  <Typography variant="h6" sx={{ mb: 2 }}>
+            <div className="grid grid-cols-1 gap-6">
+              <div>
+                <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-4">
+                  <h4 className="text-lg font-semibold mb-4">
                     Project Score
-                  </Typography>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                    <Box sx={{ position: 'relative', display: 'inline-flex' }}>
-                      <CircularProgress
-                        variant="determinate"
-                        value={project.score}
-                        size={60}
-                        color={getScoreColor(project.score)}
-                      />
-                      <Box
-                        sx={{
-                          top: 0,
-                          left: 0,
-                          bottom: 0,
-                          right: 0,
-                          position: 'absolute',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                        }}
-                      >
-                        <Typography variant="caption" component="div" color="text.secondary">
-                          {project.score}
-                        </Typography>
-                      </Box>
-                    </Box>
-                    <Typography variant="body2" color="text.secondary">
+                  </h4>
+                  <div className="flex items-center gap-4">
+                    <CircularProgress
+                      variant="determinate"
+                      value={project.score}
+                      size={60}
+                      sx={{ color: getScoreColor(project.score) }}
+                    />
+                    <p className="text-secondary-foreground">
                       Based on TVL, wallet growth, social engagement, and development activity
-                    </Typography>
-                  </Box>
-                </Paper>
-              </Grid>
+                    </p>
+                  </div>
+                </div>
+              </div>
 
-              <Grid item xs={12}>
-                <Paper sx={{ p: 2 }}>
-                  <Typography variant="h6" sx={{ mb: 2 }}>
+              <div>
+                <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-4">
+                  <h4 className="text-lg font-semibold mb-4">
                     Key Metrics
-                  </Typography>
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                    <Box>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5, alignItems: 'center' }}>
-                        <Button variant="ghost" onClick={() => handleMetricClick('tvl')} className="p-0 min-w-0 font-semibold">
+                  </h4>
+                  <div className="flex flex-col gap-6">
+                    <div>
+                      <div className="flex justify-between mb-1 items-center">
+                        <Button variant="ghost" onClick={() => handleMetricClick('tvl')} className="p-0 min-w-0 font-semibold h-auto">
                           Total Value Locked (TVL)
                         </Button>
-                        <Typography variant="subtitle2">
+                        <span className="text-sm font-semibold">
                           ${project.tvl?.toLocaleString() || '0'}
-                        </Typography>
-                      </Box>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <LinearProgress
-                          variant="determinate"
-                          value={Math.min((project.tvl / 10000000) * 100, 100)}
-                          color="primary"
-                          sx={{ height: 6, borderRadius: 1, flexGrow: 1 }}
-                        />
-                        <Typography variant="caption" color="text.secondary">
-                          {project.tvl >= 1000000 ? 'High' : project.tvl >= 100000 ? 'Medium' : 'Low'} TVL
-                        </Typography>
-                      </Box>
-                      <Typography variant="caption" color="text.secondary">
+                        </span>
+                      </div>
+                      <LinearProgress
+                        variant="determinate"
+                        value={Math.min((project.tvl / 10000000) * 100, 100)}
+                        sx={{ height: 6, borderRadius: 4, color: 'primary.main' }}
+                      />
+                      <p className="text-xs text-secondary-foreground mt-1">
                         Indicates the absolute value of assets locked in the protocol. Higher is better.
-                      </Typography>
-                    </Box>
-                    <Box>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5, alignItems: 'center' }}>
-                        <Button variant="ghost" onClick={() => handleMetricClick('wallets')} className="p-0 min-w-0 font-semibold">
+                      </p>
+                    </div>
+                    <div>
+                      <div className="flex justify-between mb-1 items-center">
+                        <Button variant="ghost" onClick={() => handleMetricClick('wallets')} className="p-0 min-w-0 font-semibold h-auto">
                           Active Wallets
                         </Button>
-                        <Typography variant="subtitle2">
+                        <span className="text-sm font-semibold">
                           {project.wallets?.toLocaleString() || '0'}
-                        </Typography>
-                      </Box>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <LinearProgress
-                          variant="determinate"
-                          value={Math.min((project.wallets / 10000) * 100, 100)}
-                          color="primary"
-                          sx={{ height: 6, borderRadius: 1, flexGrow: 1 }}
-                        />
-                        <Typography variant="caption" color="text.secondary">
-                          {project.wallets >= 5000 ? 'High' : project.wallets >= 1000 ? 'Medium' : 'Low'} Activity
-                        </Typography>
-                      </Box>
-                      <Typography variant="caption" color="text.secondary">
+                        </span>
+                      </div>
+                      <LinearProgress
+                        variant="determinate"
+                        value={Math.min((project.wallets / 10000) * 100, 100)}
+                        sx={{ height: 6, borderRadius: 4, color: 'primary.main' }}
+                      />
+                      <p className="text-xs text-secondary-foreground mt-1">
                         Shows the number of unique wallets interacting with the project. Higher means more users.
-                      </Typography>
-                    </Box>
-                    <Box>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5, alignItems: 'center' }}>
-                        <Button variant="ghost" onClick={() => handleMetricClick('mentions')} className="p-0 min-w-0 font-semibold">
+                      </p>
+                    </div>
+                    <div>
+                      <div className="flex justify-between mb-1 items-center">
+                        <Button variant="ghost" onClick={() => handleMetricClick('mentions')} className="p-0 min-w-0 font-semibold h-auto">
                           Social Mentions (24h)
                         </Button>
-                        <Typography variant="subtitle2">
+                        <span className="text-sm font-semibold">
                           {Array.isArray(project.mentions) ? project.mentions.length : 0}
-                        </Typography>
-                      </Box>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <LinearProgress
-                          variant="determinate"
-                          value={Math.min((project.mentions / 5000) * 100, 100)}
-                          color={project.hype === 'High' ? 'error' : 'primary'}
-                          sx={{ height: 6, borderRadius: 1, flexGrow: 1 }}
-                        />
-                        <Typography variant="caption" color="text.secondary">
-                          {project.hype === 'High' ? 'High' : project.mentions >= 1000 ? 'Medium' : 'Low'} Engagement
-                        </Typography>
-                      </Box>
-                      <Typography variant="caption" color="text.secondary">
+                        </span>
+                      </div>
+                      <LinearProgress
+                        variant="determinate"
+                        value={Math.min((project.mentions / 5000) * 100, 100)}
+                        sx={{ height: 6, borderRadius: 4, color: project.hype === 'High' ? 'error.main' : 'primary.main' }}
+                      />
+                      <p className="text-xs text-secondary-foreground mt-1">
                         Reflects the number of times this project was mentioned on social media in the last 24 hours.
-                      </Typography>
-                    </Box>
-                    <Box>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5, alignItems: 'center' }}>
-                        <Button variant="text" onClick={() => handleMetricClick('commits')} sx={{ p: 0, minWidth: 0, fontWeight: 600 }}>
+                      </p>
+                    </div>
+                    <div>
+                      <div className="flex justify-between mb-1 items-center">
+                        <Button variant="ghost" onClick={() => handleMetricClick('commits')} className="p-0 min-w-0 font-semibold h-auto">
                           Development Activity (30d)
                         </Button>
-                        <Typography variant="subtitle2">
+                        <span className="text-sm font-semibold">
                           {project.commits || 0} commits
-                        </Typography>
-                      </Box>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <LinearProgress
-                          variant="determinate"
-                          value={Math.min((project.commits / 50) * 100, 100)}
-                          color="primary"
-                          sx={{ height: 6, borderRadius: 1, flexGrow: 1 }}
-                        />
-                        <Typography variant="caption" color="text.secondary">
-                          {project.commits >= 20 ? 'High' : project.commits >= 10 ? 'Medium' : 'Low'} Activity
-                        </Typography>
-                      </Box>
-                      <Typography variant="caption" color="text.secondary">
+                        </span>
+                      </div>
+                      <LinearProgress
+                        variant="determinate"
+                        value={Math.min((project.commits / 50) * 100, 100)}
+                        sx={{ height: 6, borderRadius: 4, color: 'primary.main' }}
+                      />
+                      <p className="text-xs text-secondary-foreground mt-1">
                         Number of code commits in the last 30 days. Higher means more active development.
-                      </Typography>
-                    </Box>
-                  </Box>
-                </Paper>
-              </Grid>
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
 
-              <Grid item xs={12}>
-                <Paper sx={{ p: 2 }}>
-                  <Typography variant="h6" sx={{ mb: 2 }}>
+              <div>
+                <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-4">
+                  <h4 className="text-lg font-semibold mb-4">
                     Growth Indicators
-                  </Typography>
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  </h4>
+                  <div className="flex flex-col gap-4">
+                    <div className="flex items-center gap-2">
                       {project.score >= 70 ? (
-                        <TrendingUpIcon color="success" />
+                        <TrendingUpIcon className="text-green-500 w-5 h-5"/>
                       ) : (
-                        <TrendingDownIcon color="error" />
+                        <TrendingDownIcon className="text-red-500 w-5 h-5"/>
                       )}
-                      <Typography variant="body2">
+                      <p className="text-secondary-foreground">
                         {project.score >= 70 
                           ? 'Strong fundamentals with sustainable growth'
                           : 'High social hype but weak fundamentals'}
-                      </Typography>
-                    </Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
                       {project.commits > 10 ? (
-                        <TrendingUpIcon color="success" />
+                        <TrendingUpIcon className="text-green-500 w-5 h-5"/>
                       ) : (
-                        <TrendingDownIcon color="error" />
+                        <TrendingDownIcon className="text-red-500 w-5 h-5"/>
                       )}
-                      <Typography variant="body2">
+                      <p className="text-secondary-foreground">
                         {project.commits > 10
                           ? 'Active development with regular updates'
                           : 'Limited development activity'}
-                      </Typography>
-                    </Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
                       {project.wallets > 2000 ? (
-                        <TrendingUpIcon color="success" />
+                        <TrendingUpIcon className="text-green-500 w-5 h-5"/>
                       ) : (
-                        <TrendingDownIcon color="error" />
+                        <TrendingDownIcon className="text-red-500 w-5 h-5"/>
                       )}
-                      <Typography variant="body2">
+                      <p className="text-secondary-foreground">
                         {project.wallets > 2000
                           ? 'Strong user adoption and growth'
                           : 'Limited user base and adoption'}
-                      </Typography>
-                    </Box>
-                  </Box>
-                </Paper>
-              </Grid>
-            </Grid>
-          </Box>
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         ) : null}
-      </Box>
+      </div>
 
       <MetricDetailsDrawer
         open={drawerOpen}

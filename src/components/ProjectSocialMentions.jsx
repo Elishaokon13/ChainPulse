@@ -57,77 +57,67 @@ const ProjectSocialMentions = ({ projectHandle }) => {
 
   if (loading) {
     return (
-      <Card>
-        <CardContent>
-          <Box display="flex" justifyContent="center" alignItems="center" minHeight={200}>
+      <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
+        <div className="p-6">
+          <div className="flex justify-center items-center min-h-[200px]">
             <CircularProgress />
-          </Box>
-        </CardContent>
-      </Card>
+          </div>
+        </div>
+      </div>
     );
   }
 
   if (error) {
     return (
-      <Card>
-        <CardContent>
-          <Typography color="error">{error}</Typography>
-        </CardContent>
-      </Card>
+      <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
+        <div className="p-6">
+          <p className="text-red-500">{error}</p>
+        </div>
+      </div>
     );
   }
 
   return (
-    <Card>
-      <CardContent>
-        <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-          <Typography variant="h6">Social Mentions</Typography>
-          <Chip 
-            label={`Score: ${Math.round(score)}`}
-            color={score > 50 ? "success" : "warning"}
-            icon={score > 50 ? <TrendingUp /> : <TrendingDown />}
-          />
-        </Box>
+    <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
+      <div className="p-6">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-semibold">Social Mentions</h3>
+          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${score > 50 ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
+            Score: {Math.round(score)}
+            {score > 50 ? <TrendingUp className="ml-1 w-4 h-4"/> : <TrendingDown className="ml-1 w-4 h-4"/>}
+          </span>
+        </div>
 
-        <Grid container spacing={2}>
+        <div className="grid grid-cols-1 gap-4">
           {mentions.map((tweet) => (
-            <Grid item xs={12} key={tweet.id}>
-              <Box 
-                p={2} 
-                border={1} 
-                borderColor="divider" 
-                borderRadius={1}
-                display="flex"
-                alignItems="center"
-                gap={2}
+            <div key={tweet.id} className="col-span-1">
+              <div 
+                className="p-4 border border-border rounded-md flex items-center gap-4"
               >
-                <Timeline color="primary" />
-                <Box flex={1}>
-                  <Typography variant="body2" color="textSecondary">
+                <Timeline className="text-primary w-5 h-5"/>
+                <div className="flex-1">
+                  <p className="text-sm text-secondary-foreground">
                     {formatDistanceToNow(new Date(tweet.created_at), { addSuffix: true })}
-                  </Typography>
-                  <Typography variant="body1">{tweet.text}</Typography>
-                  <Box display="flex" gap={2} mt={1}>
-                    <Chip 
-                      size="small" 
-                      label={`❤️ ${tweet.public_metrics.like_count}`} 
-                    />
-                    <Chip 
-                      size="small" 
-                      label={`🔄 ${tweet.public_metrics.retweet_count}`} 
-                    />
-                    <Chip 
-                      size="small" 
-                      label={`💬 ${tweet.public_metrics.reply_count}`} 
-                    />
-                  </Box>
-                </Box>
-              </Box>
-            </Grid>
+                  </p>
+                  <p className="text-foreground">{tweet.text}</p>
+                  <div className="flex gap-2 mt-2 text-sm">
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-gray-100 text-gray-800">
+                      ❤️ {tweet.public_metrics.like_count}
+                    </span>
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-gray-100 text-gray-800">
+                      🔄 {tweet.public_metrics.retweet_count}
+                    </span>
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-gray-100 text-gray-800">
+                      💬 {tweet.public_metrics.reply_count}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
           ))}
-        </Grid>
-      </CardContent>
-    </Card>
+        </div>
+      </div>
+    </div>
   );
 };
 

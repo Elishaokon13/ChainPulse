@@ -33,97 +33,97 @@ export default function Metrics() {
 
   if (loading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
+      <div className="flex justify-center items-center h-[50vh]">
         <CircularProgress />
-      </Box>
+      </div>
     );
   }
 
   if (error) {
     return (
-      <Box sx={{ p: 4, textAlign: 'center' }}>
-        <Typography color="error">{error}</Typography>
-      </Box>
+      <div className="p-4 text-center">
+        <p className="text-red-500">{error}</p>
+      </div>
     );
   }
 
   if (!metrics) {
     return (
-      <Box sx={{ p: 4, textAlign: 'center' }}>
-        <Typography>No metrics available</Typography>
-      </Box>
+      <div className="p-4 text-center">
+        <p>No metrics available</p>
+      </div>
     );
   }
 
   return (
-    <Box sx={{ pb: 4, px: { xs: 2, sm: 3, md: 4 } }}>
-      <Typography variant="h4" sx={{ mb: 4, fontWeight: 600 }}>
+    <div className="pb-4 px-4 md:px-6 lg:px-8">
+      <h1 className="text-3xl font-semibold mb-6">
         Platform Metrics
-      </Typography>
+      </h1>
 
-      <Grid container spacing={3}>
-        <Grid item xs={12} md={6}>
-          <Paper sx={{ p: 3 }}>
-            <Typography variant="h6" sx={{ mb: 3 }}>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6">
+            <h2 className="text-xl font-semibold mb-4">
               Overview
-            </Typography>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <Box>
-                <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+            </h2>
+            <div className="flex flex-col gap-4">
+              <div>
+                <p className="text-sm text-secondary-foreground mb-1">
                   Total Projects Tracked
-                </Typography>
-                <Typography variant="h5">
+                </p>
+                <p className="text-2xl font-semibold">
                   {metrics?.totalProjects?.toLocaleString() || '0'}
-                </Typography>
-              </Box>
-              <Box>
-                <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                </p>
+              </div>
+              <div>
+                <p className="text-sm text-secondary-foreground mb-1">
                   Total TVL
-                </Typography>
-                <Typography variant="h5">
+                </p>
+                <p className="text-2xl font-semibold">
                   ${metrics?.totalTVL?.toLocaleString() || '0'}
-                </Typography>
-              </Box>
-              <Box>
-                <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                </p>
+              </div>
+              <div>
+                <p className="text-sm text-secondary-foreground mb-1">
                   Total Wallets
-                </Typography>
-                <Typography variant="h5">
+                </p>
+                <p className="text-2xl font-semibold">
                   {metrics?.totalWallets?.toLocaleString() || '0'}
-                </Typography>
-              </Box>
-            </Box>
-          </Paper>
-        </Grid>
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
 
-        <Grid item xs={12} md={6}>
-          <Paper sx={{ p: 3 }}>
-            <Typography variant="h6" sx={{ mb: 3 }}>
+        <div>
+          <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6">
+            <h2 className="text-xl font-semibold mb-4">
               Chain Distribution
-            </Typography>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            </h2>
+            <div className="flex flex-col gap-4">
               {metrics?.chainDistribution?.map((chain) => (
-                <Box key={chain.name}>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                    <Typography variant="subtitle2">{chain.name}</Typography>
-                    <Typography variant="subtitle2">{chain.count}</Typography>
-                  </Box>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                    <Typography variant="body2" color="text.secondary">
+                <div key={chain.name}>
+                  <div className="flex justify-between mb-1">
+                    <p className="font-semibold">{chain.name}</p>
+                    <p className="font-semibold">{chain.count}</p>
+                  </div>
+                  <div className="flex justify-between text-sm text-secondary-foreground mb-1">
+                    <p>
                       TVL: ${chain.tvl?.toLocaleString() || '0'}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
+                    </p>
+                    <p>
                       Wallets: {chain.wallets?.toLocaleString() || '0'}
-                    </Typography>
-                  </Box>
-                </Box>
+                    </p>
+                  </div>
+                </div>
               )) || (
-                <Typography color="text.secondary">No chain data available</Typography>
+                <p className="text-secondary-foreground text-center">No chain data available</p>
               )}
-            </Box>
-          </Paper>
-        </Grid>
-      </Grid>
-    </Box>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 } 

@@ -57,152 +57,119 @@ export default function Signals() {
     }
   ];
 
+  const getSignalCardClasses = (type) => {
+    if (type === 'Bullish') {
+      return 'bg-green-50 border-green-200';
+    } else if (type === 'Bearish') {
+      return 'bg-red-50 border-red-200';
+    } else {
+      return 'bg-gray-50 border-gray-200';
+    }
+  };
+
+  const getTextColor = (value) => {
+    if (value > 0) return 'text-green-600';
+    if (value < 0) return 'text-red-600';
+    return 'text-gray-600';
+  };
+
   return (
-    <Box sx={{ pb: 4, px: { xs: 2, sm: 3, md: 4 } }}>
+    <div className="container mx-auto px-4 py-8">
       {/* Header Section */}
-      <Box sx={{ mb: 4 }}>
-        <Typography 
-          variant="h4" 
-          component="h1" 
-          gutterBottom
-          sx={{ 
-            fontFamily: 'Charter',
-            fontWeight: 600,
-            color: 'primary.main',
-            mb: 2
-          }}
-        >
+      <div className="mb-8">
+        <h1 className="text-3xl font-semibold mb-2">
           Trading Signals
-        </Typography>
-        <Typography color="text.secondary" paragraph>
+        </h1>
+        <p className="text-secondary-foreground">
           Real-time signals based on onchain metrics and social analysis
-        </Typography>
-      </Box>
+        </p>
+      </div>
 
       {/* Signals Grid */}
-      <Grid container spacing={3}>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {signals.map((signal) => (
-          <Grid item xs={12} md={6} key={signal.id}>
-            <Card sx={{ 
-              height: '100%',
-              background: signal.type === 'Bullish' 
-                ? 'linear-gradient(145deg, #e8f5e9 0%, #c8e6c9 100%)'
-                : 'linear-gradient(145deg, #ffebee 0%, #ffcdd2 100%)',
-              border: '1px solid',
-              borderColor: signal.type === 'Bullish' ? 'success.light' : 'error.light'
-            }}>
-              <CardContent>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-                  <Typography variant="h6" sx={{ fontWeight: 600 }}>
+          <div key={signal.id}>
+            <div className={`rounded-lg border shadow-sm h-full flex flex-col ${getSignalCardClasses(signal.type)}`}>
+              <div className="p-6 flex-grow">
+                <div className="flex justify-between items-start mb-4">
+                  <h3 className="text-lg font-semibold">
                     {signal.project}
-                  </Typography>
-                  <Chip 
-                    label={signal.chain} 
-                    size="small" 
-                    sx={{ 
-                      backgroundColor: 'rgba(26, 115, 232, 0.1)',
-                      color: 'primary.main'
-                    }} 
-                  />
-                </Box>
+                  </h3>
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-500 text-white">
+                    {signal.chain}
+                  </span>
+                </div>
 
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-                  <Chip 
-                    icon={signal.type === 'Bullish' ? <TrendingUpIcon /> : <TrendingDownIcon />}
-                    label={signal.type}
-                    color={signal.type === 'Bullish' ? 'success' : 'error'}
-                    size="small"
-                  />
-                  <Typography variant="body2" color="text.secondary">
+                <div className="flex items-center gap-2 mb-4 text-sm text-secondary-foreground">
+                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${signal.type === 'Bullish' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                    {signal.type === 'Bullish' ? <TrendingUpIcon className="-ml-1 mr-1 w-4 h-4"/> : <TrendingDownIcon className="-ml-1 mr-1 w-4 h-4"/>}
+                    {signal.type}
+                  </span>
+                  <p>
                     Confidence: {signal.confidence}%
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
+                  </p>
+                  <p>
                     Timeframe: {signal.timeframe}
-                  </Typography>
-                </Box>
+                  </p>
+                </div>
 
-                <Typography paragraph>
+                <p className="text-secondary-foreground mb-4">
                   {signal.description}
-                </Typography>
+                </p>
 
-                <Divider sx={{ my: 2 }} />
+                <hr className="my-4 border-t border-border" />
 
-                <Grid container spacing={2}>
-                  <Grid item xs={6}>
-                    <Typography variant="body2" color="text.secondary">
-                      TVL Growth
-                    </Typography>
-                    <Typography 
-                      color={signal.metrics.tvlGrowth >= 0 ? 'success.main' : 'error.main'}
-                      sx={{ fontWeight: 500 }}
-                    >
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <p className="text-secondary-foreground">TVL Growth</p>
+                    <p className={`${getTextColor(signal.metrics.tvlGrowth)} font-semibold`}>
                       {signal.metrics.tvlGrowth > 0 ? '+' : ''}{signal.metrics.tvlGrowth}%
-                    </Typography>
-                  </Grid>
-                  <Grid item xs={6}>
-                    <Typography variant="body2" color="text.secondary">
-                      Wallet Growth
-                    </Typography>
-                    <Typography 
-                      color={signal.metrics.walletGrowth >= 0 ? 'success.main' : 'error.main'}
-                      sx={{ fontWeight: 500 }}
-                    >
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-secondary-foreground">Wallet Growth</p>
+                    <p className={`${getTextColor(signal.metrics.walletGrowth)} font-semibold`}>
                       {signal.metrics.walletGrowth > 0 ? '+' : ''}{signal.metrics.walletGrowth}
-                    </Typography>
-                  </Grid>
-                  <Grid item xs={6}>
-                    <Typography variant="body2" color="text.secondary">
-                      Volume Growth
-                    </Typography>
-                    <Typography 
-                      color={signal.metrics.volumeGrowth >= 0 ? 'success.main' : 'error.main'}
-                      sx={{ fontWeight: 500 }}
-                    >
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-secondary-foreground">Volume Growth</p>
+                    <p className={`${getTextColor(signal.metrics.volumeGrowth)} font-semibold`}>
                       {signal.metrics.volumeGrowth > 0 ? '+' : ''}{signal.metrics.volumeGrowth}%
-                    </Typography>
-                  </Grid>
-                  <Grid item xs={6}>
-                    <Typography variant="body2" color="text.secondary">
-                      Social Growth
-                    </Typography>
-                    <Typography 
-                      color={signal.metrics.socialGrowth >= 0 ? 'success.main' : 'error.main'}
-                      sx={{ fontWeight: 500 }}
-                    >
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-secondary-foreground">Social Growth</p>
+                    <p className={`${getTextColor(signal.metrics.socialGrowth)} font-semibold`}>
                       {signal.metrics.socialGrowth > 0 ? '+' : ''}{signal.metrics.socialGrowth}%
-                    </Typography>
-                  </Grid>
-                </Grid>
+                    </p>
+                  </div>
+                </div>
 
-                <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end' }}>
+                <div className="mt-6 flex justify-end">
                   <Button
                     endIcon={<ArrowForwardIcon />}
-                    color="primary"
                     onClick={() => setSelectedSignal(signal)}
+                    variant="outline"
                   >
                     View Analysis
                   </Button>
-                </Box>
-              </CardContent>
-            </Card>
-          </Grid>
+                </div>
+              </div>
+            </div>
+          </div>
         ))}
-      </Grid>
+      </div>
 
       {/* Signal Analysis Modal */}
       {selectedSignal && (
-        <Paper sx={{ 
-          mt: 4, 
-          p: 3,
-          background: 'linear-gradient(145deg, #ffffff 0%, #e8f0fe 100%)',
-          border: '1px solid rgba(26, 115, 232, 0.1)'
-        }}>
-          <Typography variant="h6" gutterBottom>
+        <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6 mt-8">
+          <h2 className="text-xl font-semibold mb-4">
             Detailed Analysis: {selectedSignal.project}
-          </Typography>
+          </h2>
           {/* Add detailed analysis content here */}
-        </Paper>
+        </div>
       )}
-    </Box>
+    </div>
   );
 } 

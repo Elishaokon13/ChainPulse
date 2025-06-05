@@ -101,34 +101,34 @@ export default function Projects() {
 
   if (error) {
     return (
-      <Container>
-        <Typography color="error" sx={{ p: 4, textAlign: 'center' }}>
+      <div className="container mx-auto px-4 py-8">
+        <p className="text-red-500 p-4 text-center">
           {error}
-        </Typography>
-      </Container>
+        </p>
+      </div>
     );
   }
 
   return (
-    <Container>
-      <Typography variant="h4" sx={{ mb: 4 }}>
+    <div className="container mx-auto px-4 py-8">
+      <h1 className="text-3xl font-semibold mb-6">
         DeFi Projects
-      </Typography>
-      <Grid container spacing={3}>
+      </h1>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {projects.map((project) => (
-          <Grid item xs={12} sm={6} md={4} key={project.id}>
+          <div key={project.id}>
             <ProjectCard
               project={project}
-              onSelect={handleProjectSelect}
+              onClick={() => handleProjectSelect(project.id)}
             />
-          </Grid>
+          </div>
         ))}
-      </Grid>
+      </div>
       <ProjectDetailsPanel
         projectId={selectedProjectId}
         open={!!selectedProjectId}
         onClose={() => setSelectedProjectId(null)}
       />
-    </Container>
+    </div>
   );
 } 
